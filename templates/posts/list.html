@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Posts
+{% endblock title %}
+
+{% block content %}
+<h1>Posts</h1>
+<ul>
+    {% for item in posts %}
+    <li>
+        <div>
+            <h5>Title: {{ item.title }}</h5>
+            <p>Body: {{ item.body|truncatechars:10 }}</p>
+            <span><strong>Author: {{ item.author }}</strong></span>
+            <br>
+            <span><strong>Status: {{ item.status }}</strong></span>
+            <br>
+            <span><strong>Status: {{ item.status }}</strong></span>
+            <a href="{% url 'post_detail' item.id %}">Continue reading...</a>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock content %}

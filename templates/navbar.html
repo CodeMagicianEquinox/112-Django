@@ -10,14 +10,16 @@
         <li class="nav-item">
           <a class="nav-link active" href="{% url 'home' %}">Home</a>
         </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Dropdown</a>
-        </li>
 
         {% if user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
+            <a href="{% url 'post_create' %}" class="btn btn-outline-primary">New Post</a>
+            <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-link nav-link" style="display:inline; padding: 0;">Log Out</button>
+            </form>
           </li>
+
         {% else %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'login' %}">Log In</a>
@@ -25,6 +27,7 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'signup' %}">Sign Up</a>
           </li>
+          
         {% endif %}
       </ul>
     </div>
