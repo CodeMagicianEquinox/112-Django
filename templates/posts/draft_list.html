@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}
+My Drafts
+{% endblock %}
+
+{% block content %}
+  <h1>My Draft Posts</h1>
+  <ul>
+    {% for post in draft_posts %}
+      <li>
+        <a href="{{ post.get_absolute_url }}">{{ post.title }}</a> - {{ post.created_on|date:"SHORT_DATE_FORMAT" }}
+      </li>
+    {% empty %}
+      <li>No drafts found.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

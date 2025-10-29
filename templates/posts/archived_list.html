@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Archived Posts{% endblock %}
+
+{% block content %}
+  <h1>Archived Posts</h1>
+
+  <ul>
+    {% for post in archived_posts %}
+      <li>
+        <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+        {% if post.author == user %}
+          — <a href="{% url 'post_update' post.pk %}">Edit</a>
+        {% endif %}
+      </li>
+    {% empty %}
+      <li>No archived posts found.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

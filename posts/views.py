@@ -1,7 +1,30 @@
-from django.views.generic import ListView, DetailView
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic import (
+    ListView, 
+    DetailView,
+    CreateView, 
+    UpdateView, 
+    DeleteView
+)
 from django.urls import reverse_lazy
+
 from .models import Post, Status
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    UserPassesTestMixin
+
+)
+
+from django.core.exceptions import PermissionDenied
+
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    # existing code ...
+
+    def test_func(self):
+        post = self.get_object()
+        if self.request.user.is_authenticated and self.request.user == post.author:
+            return True
+        raise PermissionDenied
+
 
 class PostListView(ListView):
     template_name = "posts/list.html"
@@ -18,13 +41,13 @@ class PostListView(ListView):
         return context
 
 
-class PostDetailedView(DetailView):
+class PostDetailedView(LoginRequiredMixin, DetailView):  # GET
     template_name = "posts/detail.html"
     model = Post
     context_object_name = "single_post"
 
 
-class PostCreateView(CreateView):
+class PostCreateView(LoginRequiredMixin,CreateView):
     template_name = "posts/new.html"
     model = Post
     fields = ["title", "subtitle", "body", "status"]
@@ -34,14 +57,39 @@ class PostCreateView(CreateView):
         return super().form_valid(form)
 
 
-class PostUpdateView(UpdateView):
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     template_name = "posts/edit.html"
     model = Post
     fields = ["title", "subtitle", "body", "status"]
-    success_url = reverse_lazy("post_list")
+
+    def test_func(self):
+        post = self.get_object()
+        if self.request.user.is_authenticated:
+            return self.request.user == post.author
 
 
 class PostDeleteView(DeleteView):
     template_name = "posts/delete.html"
     model = Post
     success_url = reverse_lazy("post_list")
+
+
+class DraftPostListView(LoginRequiredMixin, ListView):
+    template_name = "posts/draft_list.html"
+    context_object_name = "draft_posts"
+
+    def get_queryset(self):
+        draft_status = Status.objects.get(name="draft")
+        return Post.objects.filter(
+            status=draft_status,
+            author=self.request.user
+        ).order_by("-created_on")
+
+
+class ArchivedPostListView(LoginRequiredMixin, ListView):
+    template_name = "posts/archived_list.html"
+    context_object_name = "archived_posts"
+
+    def get_queryset(self):
+        archived_status = Status.objects.get(name="archived")
+        return Post.objects.filter(status=archived_status).order_by("-created_on")
