@@ -6,26 +6,16 @@ from django.views.generic import (
     DeleteView
 )
 from django.urls import reverse_lazy
-
-from .models import Post, Status
+from django.core.exceptions import PermissionDenied
 from django.contrib.auth.mixins import (
     LoginRequiredMixin,
     UserPassesTestMixin
-
 )
 
-from django.core.exceptions import PermissionDenied
-
-class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    # existing code ...
-
-    def test_func(self):
-        post = self.get_object()
-        if self.request.user.is_authenticated and self.request.user == post.author:
-            return True
-        raise PermissionDenied
+from .models import Post, Status
 
 
+# ✅ List of Published Posts
 class PostListView(ListView):
     template_name = "posts/list.html"
     context_object_name = "posts"
@@ -41,13 +31,15 @@ class PostListView(ListView):
         return context
 
 
-class PostDetailedView(LoginRequiredMixin, DetailView):  # GET
+# ✅ Detail View
+class PostDetailedView(LoginRequiredMixin, DetailView):
     template_name = "posts/detail.html"
     model = Post
     context_object_name = "single_post"
 
 
-class PostCreateView(LoginRequiredMixin,CreateView):
+# ✅ Create New Post
+class PostCreateView(LoginRequiredMixin, CreateView):
     template_name = "posts/new.html"
     model = Post
     fields = ["title", "subtitle", "body", "status"]
@@ -57,6 +49,7 @@ class PostCreateView(LoginRequiredMixin,CreateView):
         return super().form_valid(form)
 
 
+# ✅ Edit Post (author-only)
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     template_name = "posts/edit.html"
     model = Post
@@ -64,16 +57,19 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         post = self.get_object()
-        if self.request.user.is_authenticated:
-            return self.request.user == post.author
+        if self.request.user.is_authenticated and self.request.user == post.author:
+            return True
+        raise PermissionDenied
 
 
+# ✅ Delete Post
 class PostDeleteView(DeleteView):
     template_name = "posts/delete.html"
     model = Post
     success_url = reverse_lazy("post_list")
 
 
+# ✅ Draft Posts (Author Only)
 class DraftPostListView(LoginRequiredMixin, ListView):
     template_name = "posts/draft_list.html"
     context_object_name = "draft_posts"
@@ -86,6 +82,7 @@ class DraftPostListView(LoginRequiredMixin, ListView):
         ).order_by("-created_on")
 
 
+# ✅ Archived Posts (All Users Can View)
 class ArchivedPostListView(LoginRequiredMixin, ListView):
     template_name = "posts/archived_list.html"
     context_object_name = "archived_posts"
